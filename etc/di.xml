@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="GoCryptoPayFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">Eligmaltd\GoCryptoPay\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Eligmaltd\GoCryptoPay\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">GoCryptoPayValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">GoCryptoPayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GoCryptoPayConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Eligmaltd\GoCryptoPay\Model\Ui\ConfigProvider::CODE</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GoCryptoPayLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="config" xsi:type="object">GoCryptoPayConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Eligmaltd\GoCryptoPay\Gateway\Http\Client\ClientMock">
+        <arguments>
+            <argument name="logger" xsi:type="object">GoCryptoPayLogger</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="GoCryptoPayCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">GoCryptoPayAuthorizeCommand</item>
+                <item name="capture" xsi:type="string">GoCryptoPayCaptureCommand</item>
+                <item name="void" xsi:type="string">GoCryptoPayVoidCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorize command -->
+    <virtualType name="GoCryptoPayAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">GoCryptoPayAuthorizationRequest</argument>
+            <argument name="handler" xsi:type="object">GoCryptoPayResponseHandlerComposite</argument>
+            <argument name="transferFactory" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Http\Client\ClientMock</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorization Request -->
+    <virtualType name="GoCryptoPayAuthorizationRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="transaction" xsi:type="string">Eligmaltd\GoCryptoPay\Gateway\Request\AuthorizationRequest</item>
+                <item name="mockData" xsi:type="string">Eligmaltd\GoCryptoPay\Gateway\Request\MockDataRequest</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Eligmaltd\GoCryptoPay\Gateway\Request\AuthorizationRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">GoCryptoPayConfig</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="GoCryptoPayCaptureCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Request\CaptureRequest</argument>
+            <argument name="handler" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Response\TxnIdHandler</argument>
+            <argument name="transferFactory" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Http\TransferFactory</argument>
+            <argument name="validator" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Validator\ResponseCodeValidator</argument>
+            <argument name="client" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Http\Client\ClientMock</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Eligmaltd\GoCryptoPay\Gateway\Request\CaptureRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">GoCryptoPayConfig</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="GoCryptoPayVoidCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Request\VoidRequest</argument>
+            <argument name="handler" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Response\TxnIdHandler</argument>
+            <argument name="transferFactory" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Http\TransferFactory</argument>
+            <argument name="validator" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Validator\ResponseCodeValidator</argument>
+            <argument name="client" xsi:type="object">Eligmaltd\GoCryptoPay\Gateway\Http\Client\ClientMock</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Eligmaltd\GoCryptoPay\Gateway\Request\VoidRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">GoCryptoPayConfig</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="GoCryptoPayResponseHandlerComposite" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="txnid" xsi:type="string">Eligmaltd\GoCryptoPay\Gateway\Response\TxnIdHandler</item>
+                <item name="fraud" xsi:type="string">Eligmaltd\GoCryptoPay\Gateway\Response\FraudHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="GoCryptoPayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">GoCryptoPayConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GoCryptoPayConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">GoCryptoPayConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Eligmaltd\GoCryptoPay\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">GoCryptoPayConfig</argument>
+        </arguments>
+    </type>
+
+</config>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <gocrypto_pay>
+                <debug>1</debug>
+                <active>1</active>
+                <model>GoCryptoPayFacade</model>
+                <currency>USD</currency>
+                <is_sandbox>1</is_sandbox>
+                <host>HOST</host>
+                <otp>OTP</otp>
+                <terminal_id>TERMINAL ID</terminal_id>
+                <can_use_checkout>1</can_use_checkout>
+                <is_gateway>1</is_gateway>
+                <client_id></client_id>
+                <client_secret></client_secret>
+            </gocrypto_pay>
+        </payment>
+    </default>
+</config>
